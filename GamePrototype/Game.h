@@ -1,5 +1,7 @@
 #pragma once
 #include "BaseGame.h"
+#include "VoidCircle.h"
+#include "PlayerController.h"
 class Game : public BaseGame
 {
 public:
@@ -27,4 +29,7 @@ private:
 	void Initialize();
 	void Cleanup( );
 	void ClearBackground( ) const;
+
+	VoidCircle* m_voidCircle{};
+	PlayerController* m_Player{};
 };
