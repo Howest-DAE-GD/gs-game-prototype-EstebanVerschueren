@@ -73,22 +73,22 @@ void PlayerController::HandleInput()
     m_Direction.x = 0;
     m_Direction.y = 0;
     // Check for right arrow key
-    if (keyStates[SDLK_d])
+    if (keyStates[SDL_SCANCODE_D])
     {
         m_Direction.x = 1;
     }
     // Check for left arrow key
-    if (keyStates[SDLK_a])
+    if (keyStates[SDL_SCANCODE_A])
     {
         m_Direction.x -= 1;
     }
     // Check for up arrow key
-    if (keyStates[SDLK_w])
+    if (keyStates[SDL_SCANCODE_W])
     {
         m_Direction.y = 1;
     }
     // Check for down arrow key
-    if (keyStates[SDLK_s])
+    if (keyStates[SDL_SCANCODE_S])
     {
         m_Direction.y -= 1;
     }
