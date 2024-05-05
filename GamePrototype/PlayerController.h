@@ -11,6 +11,8 @@ public:
 	void Update(float elapsedSec);
 	void ProcessMouseMotionEvent(const SDL_MouseMotionEvent& e);
 
+	Point2f GetPlayerPosition();
+
 private:
 	std::vector<Point2f>* m_Points{};
 	std::vector<Point2f>* m_InitialPoints{};

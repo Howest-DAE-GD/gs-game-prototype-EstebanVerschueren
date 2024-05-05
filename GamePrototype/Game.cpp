@@ -16,6 +16,7 @@ void Game::Initialize( )
 {
 	m_voidCircle = new VoidCircle( );
 	m_Player = new PlayerController( );
+	m_Enemy = new Enemy( m_voidCircle->GetRadius());
 }
 
 void Game::Cleanup( )
@@ -27,6 +28,7 @@ void Game::Update( float elapsedSec )
 
 	m_voidCircle->Update( elapsedSec );
 	m_Player->Update( elapsedSec );
+	m_Enemy->Update( elapsedSec, m_Player->GetPlayerPosition(), m_voidCircle->GetRadius());
 
 }
 
@@ -35,7 +37,13 @@ void Game::Draw( ) const
 	ClearBackground( );
 	m_voidCircle->Draw( );
 
+	m_Enemy->Draw();
+
+
 	m_Player->Draw( );
+
+
+	m_voidCircle->DrawTexture( );
 }
 
 void Game::ProcessKeyDownEvent( const SDL_KeyboardEvent & e )
@@ -103,6 +111,6 @@ void Game::ProcessMouseUpEvent( const SDL_MouseButtonEvent& e )
 
 void Game::ClearBackground( ) const
 {
-	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+	glClearColor( 1.0f, 0.0f, 0.0f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT );
 }

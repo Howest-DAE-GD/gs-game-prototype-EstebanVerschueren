@@ -2,6 +2,7 @@
 #include "BaseGame.h"
 #include "VoidCircle.h"
 #include "PlayerController.h"
+#include "Enemy.h"
 class Game : public BaseGame
 {
 public:
@@ -32,4 +33,5 @@ private:
 
 	VoidCircle* m_voidCircle{};
 	PlayerController* m_Player{};
+	Enemy* m_Enemy{};
 };

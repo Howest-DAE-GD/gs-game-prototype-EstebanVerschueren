@@ -100,3 +100,8 @@ void PlayerController::Move(float deltaTime)
 	m_Position.x +=  m_Direction.x * m_Speed * deltaTime;
 	m_Position.y +=  m_Direction.y * m_Speed * deltaTime;
 }
+
+Point2f PlayerController::GetPlayerPosition()
+{
+	return m_Position;
+}
