@@ -1,116 +1,132 @@
 #include "pch.h"
 #include "Game.h"
 
-Game::Game( const Window& window ) 
-	:BaseGame{ window }
+Game::Game(const Window& window)
+    : BaseGame{ window }
 {
-	Initialize();
+    Initialize();
 }
 
-Game::~Game( )
+Game::~Game()
 {
-	Cleanup( );
+    Cleanup();
 }
 
-void Game::Initialize( )
+void Game::Initialize()
 {
-	m_voidCircle = new VoidCircle( );
-	m_Player = new PlayerController( );
-	m_Enemy = new Enemy( m_voidCircle->GetRadius());
+    m_voidCircle = new VoidCircle();
+    m_Player = new PlayerController(*m_voidCircle);
+    m_Enemy = new Enemy(m_voidCircle->GetRadius(), *m_voidCircle);
 }
 
-void Game::Cleanup( )
+void Game::Cleanup()
 {
+    delete m_voidCircle;
+    delete m_Player;
+    delete m_Enemy;
+    for (Pickup* pickup : m_Pickups)
+    {
+        delete pickup;
+    }
+    m_Pickups.clear();
 }
 
-void Game::Update( float elapsedSec )
+void Game::Update(float elapsedSec)
 {
+    m_voidCircle->Update(elapsedSec);
+    m_Player->Update(elapsedSec);
+    m_Enemy->Update(elapsedSec, m_Player->GetPlayerPosition(), m_voidCircle->GetRadius());
 
-	m_voidCircle->Update( elapsedSec );
-	m_Player->Update( elapsedSec );
-	m_Enemy->Update( elapsedSec, m_Player->GetPlayerPosition(), m_voidCircle->GetRadius());
+    // Check for bullet collisions with the player
+    Rectf playerRect = m_Player->GetPlayerRect();
+    for (Bullet* bullet : m_Enemy->m_Bullets)
+    {
+        if (bullet->CheckCollision(playerRect))
+        {
+            m_Player->DecrementHealth();
+        }
+    }
 
+    // Check for bullet collisions with the enemy
+    Rectf enemyRect = m_Enemy->GetEnemyRect();
+    for (Bullet* bullet : m_Player->m_Bullets)
+    {
+        if (bullet->CheckCollision(enemyRect))
+        {
+            m_Enemy->DecrementHealth();
+            if (!m_Enemy->IsAlive())
+            {
+                // Handle enemy death if needed
+                std::vector<Pickup*> enemyPickups = m_Enemy->GetPickups();
+                m_Pickups.insert(m_Pickups.end(), enemyPickups.begin(), enemyPickups.end());
+            }
+        }
+    }
+
+    // Update pickups and check for collisions with the player
+    for (Pickup* pickup : m_Pickups)
+    {
+        pickup->Update(elapsedSec);
+        if (pickup->CheckCollision(playerRect))
+        {
+            m_Player->HandlePickup(pickup);
+        }
+    }
+
+    // Remove inactive pickups
+    m_Pickups.erase(std::remove_if(m_Pickups.begin(), m_Pickups.end(), [](Pickup* pickup)
+        {
+            if (!pickup->IsActive())
+            {
+                delete pickup;
+                return true;
+            }
+            return false;
+        }), m_Pickups.end());
 }
 
-void Game::Draw( ) const
+void Game::Draw() const
 {
-	ClearBackground( );
-	m_voidCircle->Draw( );
+    ClearBackground();
+    m_voidCircle->Draw();
+    m_Enemy->Draw();
 
-	m_Enemy->Draw();
+    for (Pickup* pickup : m_Pickups)
+    {
+        pickup->Draw();
+    }
 
-
-	m_Player->Draw( );
-
-
-	m_voidCircle->DrawTexture( );
+    m_Player->Draw();
+    m_voidCircle->DrawTexture();
 }
 
-void Game::ProcessKeyDownEvent( const SDL_KeyboardEvent & e )
+void Game::ProcessKeyDownEvent(const SDL_KeyboardEvent& e)
 {
-	//std::cout << "KEYDOWN event: " << e.keysym.sym << std::endl;
+    // Handle key down events if necessary
 }
 
-void Game::ProcessKeyUpEvent( const SDL_KeyboardEvent& e )
+void Game::ProcessKeyUpEvent(const SDL_KeyboardEvent& e)
 {
-	//std::cout << "KEYUP event: " << e.keysym.sym << std::endl;
-	//switch ( e.keysym.sym )
-	//{
-	//case SDLK_LEFT:
-	//	//std::cout << "Left arrow key released\n";
-	//	break;
-	//case SDLK_RIGHT:
-	//	//std::cout << "`Right arrow key released\n";
-	//	break;
-	//case SDLK_1:
-	//case SDLK_KP_1:
-	//	//std::cout << "Key 1 released\n";
-	//	break;
-	//}
+    // Handle key up events if necessary
 }
 
-void Game::ProcessMouseMotionEvent( const SDL_MouseMotionEvent& e )
+void Game::ProcessMouseMotionEvent(const SDL_MouseMotionEvent& e)
 {
-	m_Player->ProcessMouseMotionEvent( e );
+    m_Player->ProcessMouseMotionEvent(e);
 }
 
-void Game::ProcessMouseDownEvent( const SDL_MouseButtonEvent& e )
+void Game::ProcessMouseDownEvent(const SDL_MouseButtonEvent& e)
 {
-	//std::cout << "MOUSEBUTTONDOWN event: ";
-	//switch ( e.button )
-	//{
-	//case SDL_BUTTON_LEFT:
-	//	std::cout << " left button " << std::endl;
-	//	break;
-	//case SDL_BUTTON_RIGHT:
-	//	std::cout << " right button " << std::endl;
-	//	break;
-	//case SDL_BUTTON_MIDDLE:
-	//	std::cout << " middle button " << std::endl;
-	//	break;
-	//}
-	
+    m_Player->ProcessMouseDownEvent(e);
 }
 
-void Game::ProcessMouseUpEvent( const SDL_MouseButtonEvent& e )
+void Game::ProcessMouseUpEvent(const SDL_MouseButtonEvent& e)
 {
-	//std::cout << "MOUSEBUTTONUP event: ";
-	//switch ( e.button )
-	//{
-	//case SDL_BUTTON_LEFT:
-	//	std::cout << " left button " << std::endl;
-	//	break;
-	//case SDL_BUTTON_RIGHT:
-	//	std::cout << " right button " << std::endl;
-	//	break;
-	//case SDL_BUTTON_MIDDLE:
-	//	std::cout << " middle button " << std::endl;
-	//	break;
-	//}
+    m_Player->ProcessMouseUpEvent(e);
 }
 
-void Game::ClearBackground( ) const
+void Game::ClearBackground() const
 {
-	glClearColor( 1.0f, 0.0f, 0.0f, 1.0f );
-	glClear( GL_COLOR_BUFFER_BIT );
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 }

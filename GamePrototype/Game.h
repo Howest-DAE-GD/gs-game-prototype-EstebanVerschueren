@@ -34,4 +34,6 @@ private:
 	VoidCircle* m_voidCircle{};
 	PlayerController* m_Player{};
 	Enemy* m_Enemy{};
+	std::vector<Pickup*> m_Pickups; // Add this member
+
 };

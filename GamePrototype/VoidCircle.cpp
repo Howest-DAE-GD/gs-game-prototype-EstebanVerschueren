@@ -49,3 +49,11 @@ float VoidCircle::GetRadius() const
 {
 	return m_Radius;
 }
+
+bool VoidCircle::IsPointInside(const Point2f& point) const
+{
+	float centerX = 1280.0f / 2.0f;
+	float centerY = 720.0f / 2.0f;
+	float distance = sqrt(pow(point.x - centerX, 2) + pow(point.y - centerY, 2));
+	return distance < m_Radius;
+}
