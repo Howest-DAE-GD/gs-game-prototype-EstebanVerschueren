@@ -217,3 +217,4 @@ void PlayerController::HandlePickup(Pickup* pickup)
         pickup->SetActive(false);
     }
 }
+

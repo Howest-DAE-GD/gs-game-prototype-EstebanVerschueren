@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Game.h"
+#include <iostream>
 
 Game::Game(const Window& window)
     : BaseGame{ window }
@@ -74,7 +75,7 @@ void Game::Update(float elapsedSec)
     }
 
     // Remove inactive pickups
-    m_Pickups.erase(std::remove_if(m_Pickups.begin(), m_Pickups.end(), [](Pickup* pickup)
+    auto it = std::remove_if(m_Pickups.begin(), m_Pickups.end(), [](Pickup* pickup)
         {
             if (!pickup->IsActive())
             {
@@ -82,7 +83,8 @@ void Game::Update(float elapsedSec)
                 return true;
             }
             return false;
-        }), m_Pickups.end());
+        });
+    m_Pickups.erase(it, m_Pickups.end());
 }
 
 void Game::Draw() const

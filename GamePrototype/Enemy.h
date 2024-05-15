@@ -72,4 +72,6 @@ private:
 
     std::vector<Pickup*> m_Pickups; 
     void DropPickups(); 
+
+	bool m_PickupDrop{ false };
 };

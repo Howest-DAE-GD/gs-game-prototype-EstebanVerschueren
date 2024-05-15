@@ -262,7 +262,7 @@ bool Enemy::IsTooCloseToEdge(float threshold) const
 void Enemy::DecrementHealth()
 {
     if (m_Health > 0) m_Health--;
-    if (!IsAlive())
+    if (!IsAlive() && !m_PickupDrop)
     {
         DropPickups();
     }
@@ -272,6 +272,7 @@ void Enemy::DropPickups()
 {
     // Add a health pickup
     m_Pickups.push_back(new Pickup(Pickup::Type::Health, m_Position));
+	m_PickupDrop = true;
 }
 
 std::vector<Pickup*> Enemy::GetPickups() const

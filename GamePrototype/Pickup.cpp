@@ -21,8 +21,8 @@ void Pickup::Draw() const
 {
     if (m_Active)
     {
-		utils::SetColor(Color4f{ 0.0f, 0.0f, 1.0f, 1.0f });
-		utils::FillRect(m_Position.x - m_Size / 2, m_Position.y - m_Size*2 / 2, m_Size, m_Size*2);
+        utils::SetColor(Color4f{ 0.0f, 0.0f, 1.0f, 1.0f });
+        utils::FillRect(m_Position.x - m_Size / 2, m_Position.y - m_Size * 2 / 2, m_Size, m_Size * 2);
     }
 }
 

@@ -24,7 +24,5 @@ private:
     Type m_Type;
     Point2f m_Position;
     bool m_Active;
-
-	float m_Size{ 10.0f };
+    float m_Size{ 10.0f };
 };
-
