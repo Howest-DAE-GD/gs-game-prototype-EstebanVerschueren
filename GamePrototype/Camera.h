@@ -18,8 +18,5 @@ private:
 	float m_ShakeTimeLeft{};
 	float m_ShakeDuration{};
 	float m_ShakeMagnitude{};
-
-
-
 };
 

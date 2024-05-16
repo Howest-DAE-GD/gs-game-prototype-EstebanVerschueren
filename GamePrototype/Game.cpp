@@ -242,6 +242,7 @@ void Game::Update(float elapsedSec)
     if (m_Player->GetHealth() <= 0 || m_voidCircle->GetRadius() <= 0)
     {
         m_GameState = GameState::Ended;
+        SaveHighScore("Player", static_cast<int>(m_Score), "highscore.json");
     }
 
 	m_Camera->Update(elapsedSec);
@@ -309,16 +310,12 @@ void Game::DrawEndScreen() const
     std::string restartText = "Press Space to Start Again";
     std::string helpText = "Killing enemies and enlarging the circle give more points when the circle is smaller";
     std::string scoreText = "Score: " + std::to_string(static_cast<int>(m_Score));
-    
 
     float centerX = 1280.0f / 2.0f;
     float centerY = 720.0f / 2.0f;
 
+    // Draw "Game Over" text
     float gameOverTextWidth = 0.0f;
-    float restartTextWidth = 0.0f;
-	float helpTextWidth = 0.0f;
-
-    // Calculate widths for centering the texts
     for (char c : gameOverText)
     {
         Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
@@ -327,33 +324,9 @@ void Game::DrawEndScreen() const
             gameOverTextWidth += charTexture->GetWidth();
         }
     }
-
-    for (char c : restartText)
-    {
-        Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
-        if (charTexture)
-        {
-            restartTextWidth += charTexture->GetWidth();
-        }
-    }    
-    
-    for (char c : helpText)
-    {
-        Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
-        if (charTexture)
-        {
-            helpTextWidth += charTexture->GetWidth();
-        }
-    }
-
     float gameOverX = centerX - gameOverTextWidth / 2;
-    float restartX = centerX - restartTextWidth / 2;
-	float helpX = centerX - helpTextWidth / 2;
-    float scoreX = centerX - (scoreText.size() * 10) / 2; // Assuming 24 is the character width
-
     float y = centerY - 40; // Adjust as needed
 
-    // Draw "Game Over" text
     for (char c : gameOverText)
     {
         Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
@@ -366,7 +339,18 @@ void Game::DrawEndScreen() const
 
     y -= 40; // Move down for the next line
 
-    // Draw "Press Enter to Start Again" text
+    // Draw "Press Space to Start Again" text
+    float restartTextWidth = 0.0f;
+    for (char c : restartText)
+    {
+        Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
+        if (charTexture)
+        {
+            restartTextWidth += charTexture->GetWidth();
+        }
+    }
+    float restartX = centerX - restartTextWidth / 2;
+
     for (char c : restartText)
     {
         Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
@@ -380,6 +364,8 @@ void Game::DrawEndScreen() const
     y += 120; // Move down for the next line
 
     // Draw "Score" text
+    float scoreX = centerX - (scoreText.size() * 10) / 2; // Assuming 24 is the character width
+
     for (char c : scoreText)
     {
         Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
@@ -392,7 +378,18 @@ void Game::DrawEndScreen() const
 
     y -= 300;
 
-    // Draw "Press Enter to Start Again" text
+    // Draw "Help" text
+    float helpTextWidth = 0.0f;
+    for (char c : helpText)
+    {
+        Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
+        if (charTexture)
+        {
+            helpTextWidth += charTexture->GetWidth();
+        }
+    }
+    float helpX = centerX - helpTextWidth / 2;
+
     for (char c : helpText)
     {
         Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
@@ -402,7 +399,51 @@ void Game::DrawEndScreen() const
             helpX += charTexture->GetWidth();
         }
     }
+
+    // Move to the top right corner for high scores
+    float highScoresX = 1280.0f - 200.0f; 
+    float highScoresY = 720.0f - 100.0f; 
+
+    // Read and display top 10 high scores
+    std::ifstream inputFile("highscore.json");
+    if (inputFile.is_open())
+    {
+        std::string line;
+        int rank = 1;
+        while (std::getline(inputFile, line) && rank <= 10)
+        {
+            if (line.find("Score: ") != std::string::npos)
+            {
+                std::string scoreText = std::to_string(rank) + ". " + line;
+                float scoreTextWidth = 0.0f;
+                for (char c : scoreText)
+                {
+                    Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
+                    if (charTexture)
+                    {
+                        scoreTextWidth += charTexture->GetWidth();
+                    }
+                }
+                float scoreX = highScoresX - scoreTextWidth; // Align text to the right
+
+                for (char c : scoreText)
+                {
+                    Texture* charTexture = CharacterManager::GetInstance().GetCharacterTexture(c);
+                    if (charTexture)
+                    {
+                        charTexture->Draw(Point2f{ scoreX, highScoresY });
+                        scoreX += charTexture->GetWidth();
+                    }
+                }
+
+                highScoresY -= 30; // Move down for next score
+                rank++;
+            }
+        }
+        inputFile.close();
+    }
 }
+
 
 
 void Game::ProcessKeyDownEvent(const SDL_KeyboardEvent& e)
@@ -479,6 +520,67 @@ void Game::UpdateScore(int amount)
     m_Score += amount;
 }
 
+void Game::SaveHighScore(const std::string& playerName, int score, const std::string& filename)
+{
+    // Vector to store existing high scores as pairs of score and player name
+    std::vector<std::pair<int, std::string>> highScores;
+
+    // Read existing high scores from the file
+    std::ifstream inputFile(filename);
+    if (inputFile.is_open())
+    {
+        std::string line;
+        while (std::getline(inputFile, line))
+        {
+            if (line.find("Score: ") != std::string::npos)
+            {
+                try
+                {
+                    int existingScore = std::stoi(line.substr(7));
+                    if (std::getline(inputFile, line) && line.find("Player: ") != std::string::npos)
+                    {
+                        std::string existingPlayerName = line.substr(8);
+                        highScores.push_back(std::make_pair(existingScore, existingPlayerName));
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << "Error reading high score: " << e.what() << std::endl;
+                }
+            }
+        }
+        inputFile.close();
+    }
+
+    // Add the new high score
+    highScores.push_back(std::make_pair(score, playerName));
+
+    // Sort the high scores in descending order
+    std::sort(highScores.begin(), highScores.end(), std::greater<>());
+
+    // Keep only the top 10 high scores
+    if (highScores.size() > 10)
+    {
+        highScores.resize(10);
+    }
+
+    // Write the top 10 high scores back to the file
+    std::ofstream outputFile(filename);
+    if (outputFile.is_open())
+    {
+        for (const auto& highScore : highScores)
+        {
+            outputFile << "Score: " << highScore.first << "\n";
+            outputFile << "Player: " << highScore.second << "\n";
+        }
+        outputFile.close();
+        std::cout << "High score saved successfully." << std::endl;
+    }
+    else
+    {
+        std::cerr << "Unable to open file for writing." << std::endl;
+    }
+}
 
 
 

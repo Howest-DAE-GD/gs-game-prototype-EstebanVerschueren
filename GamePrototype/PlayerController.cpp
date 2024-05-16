@@ -39,7 +39,7 @@ void PlayerController::Update(float deltaTime)
     if (!m_voidCircle.IsPointInside(m_Position))
     {
         m_TimeOutsideCircle += deltaTime;
-        if (m_TimeOutsideCircle >= 1.0f)
+        if (m_TimeOutsideCircle >= 0.2f)
         {
             DecrementHealth();
             m_TimeOutsideCircle = 0.0f; // Reset the timer

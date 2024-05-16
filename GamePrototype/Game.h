@@ -9,6 +9,11 @@
 #include "Laser.h"
 #include "SoundStream.h"
 #include "Camera.h"
+#include <fstream>
+#include <string>
+#include <sstream>
+
+
 
 class Game : public BaseGame
 {
@@ -92,4 +97,6 @@ private:
 
 	SoundStream* m_BackgroundMusic{};
 	Camera* m_Camera{};
+
+	void SaveHighScore(const std::string& playerName, int score, const std::string& filename);
 };
