@@ -34,6 +34,8 @@ void Game::Initialize()
 
 	m_Camera = new Camera(1280.0f, 720.0f);
 
+	m_Laser = new Laser(1280.0f, 720.0f);
+
     std::cout << "Game initialized.\n";
 }
 
@@ -65,6 +67,8 @@ void Game::Cleanup()
 	delete m_BackgroundMusic;
 
 	delete m_Camera;
+
+    delete m_Laser;
 
     std::cout << "Game cleaned up.\n";
 }
@@ -114,6 +118,16 @@ void Game::Update(float elapsedSec)
 		m_Camera->Update(elapsedSec);
         return; // Do not update if the game has ended
     }
+    
+    if (GetRandomFloat(0.0f, 1.0f) > 0.998 && !m_Laser->m_Active)
+    {
+		std::cout << "Laser Active" << std::endl;
+		m_Laser->m_Active = true;
+    }
+    
+
+
+	m_Laser->Update(elapsedSec);
 
     float previousRadius = m_voidCircle->GetRadius();
     m_GameTimer += elapsedSec; // Update the game timer
@@ -148,6 +162,7 @@ void Game::Update(float elapsedSec)
         m_NextEnemySpawnTime = m_GameTimer + 1.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / (GetRandomFloat(minSpawnInterval, m_SpawnInterval) - 1.0f)));
     }
 
+   
     m_voidCircle->Update(elapsedSec);
     m_Player->Update(elapsedSec);
 
@@ -243,6 +258,7 @@ void Game::Update(float elapsedSec)
     {
         m_GameState = GameState::Ended;
         SaveHighScore("Player", static_cast<int>(m_Score), "highscore.json");
+		m_Laser->m_Active = false;
     }
 
 	m_Camera->Update(elapsedSec);
@@ -284,6 +300,9 @@ void Game::Draw() const
 
         DrawScore(); // Draw the score on the screen
     }
+
+    m_Laser->Draw();
+
 	m_Camera->Reset();
 }
 

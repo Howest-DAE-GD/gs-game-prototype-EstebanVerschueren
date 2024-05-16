@@ -11,14 +11,22 @@ Laser::Laser(float screenWidth, float screenHeight)
 
 void Laser::Update(float deltaTime)
 {
+	if (previusValue != m_Active)
+    {
+		ResetLaser();
+		previusValue = m_Active;
+	}
+
+	if (!m_Active) return;
     m_Timer += deltaTime;
-    if (m_Timer >= 0.5f)
+    if (m_Timer >= 0.75f)
     {
         m_Color = Color4f{ 1.0f, 0.0f, 0.0f, 1.0f };
         m_Thickness = 400.0f;
         if (m_Timer >= 1.0f)
         {
             m_Active = false;
+            previusValue = m_Active;
         }
     }
 }

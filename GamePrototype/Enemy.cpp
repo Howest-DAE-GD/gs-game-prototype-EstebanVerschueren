@@ -271,7 +271,7 @@ void Enemy::DecrementHealth()
     if (!IsAlive() && !m_PickupDrop)
     {
         DropPickups();
-        ClearBullets();  // Add this line to clear bullets when the enemy dies
+        //ClearBullets();  // clear bullets when the enemy dies
     }
 }
 

@@ -50,12 +50,14 @@ void Camera::Aim(float levelW, float levelH, Point2f trackCenter)
 
 void Camera::Update(float elapsedSec)
 {
+
     if (m_ShakeTimeLeft > 0)
     {
         m_ShakeTimeLeft -= elapsedSec;
         if (m_ShakeTimeLeft < 0)
         {
             m_ShakeTimeLeft = 0;
+            
         }
     }
 }

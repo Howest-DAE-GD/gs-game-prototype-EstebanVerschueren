@@ -98,5 +98,6 @@ private:
 	SoundStream* m_BackgroundMusic{};
 	Camera* m_Camera{};
 
+
 	void SaveHighScore(const std::string& playerName, int score, const std::string& filename);
 };

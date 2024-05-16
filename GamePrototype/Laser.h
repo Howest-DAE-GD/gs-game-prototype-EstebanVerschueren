@@ -11,13 +11,13 @@ public:
 
     bool IsRed() const;
     bool Intersects(const Rectf& playerRect) const;
+    bool m_Active;
 
 private:
     float m_ScreenWidth;
     float m_ScreenHeight;
     float m_Timer;
     float m_Thickness;
-    bool m_Active;
 
     Point2f m_StartPoint;
     Point2f m_EndPoint1;
@@ -25,4 +25,6 @@ private:
     Color4f m_Color;
 
     void ResetLaser();
+
+	bool previusValue = false;
 };
