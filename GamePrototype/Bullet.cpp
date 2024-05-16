@@ -28,7 +28,7 @@ void Bullet::Draw() const
     if (!m_Active) return;
 
     utils::SetColor(m_Color);  // Use the color
-    utils::FillRect(m_CurrentPosition.x, m_CurrentPosition.y, 5.0f, 5.0f);
+    utils::FillRect(m_CurrentPosition.x, m_CurrentPosition.y, 10.0f, 10.0f);
 }
 
 bool Bullet::IsActive() const

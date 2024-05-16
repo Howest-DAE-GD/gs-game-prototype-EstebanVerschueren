@@ -3,9 +3,10 @@
 #include "utils.h"
 #include <ctime>
 #include <iostream>
+#include <cstdlib>
 
-Enemy::Enemy(float radius, const VoidCircle& voidCircle)
-    : m_ShootInterval(1.0f), m_ShootTimer(0.0f), m_VoidCircle(voidCircle), m_Health(3)
+Enemy::Enemy(float radius, const VoidCircle& voidCircle, float movementDuration, float movementInterval)
+	: m_ShootInterval(1.0f), m_ShootTimer(0.0f), m_VoidCircle(voidCircle), m_Health(3), m_IntervalBetweenMovement(movementInterval), moveDuration(movementDuration)
 {
     m_Points = new std::vector<Point2f>();
     m_Position = generateRandomSpawnPoint(radius);
@@ -17,18 +18,18 @@ Enemy::Enemy(float radius, const VoidCircle& voidCircle)
 Enemy::~Enemy()
 {
     delete m_Points;
+    m_Points = nullptr;
+
     for (Bullet* bullet : m_Bullets)
     {
         delete bullet;
     }
     m_Bullets.clear();
-    for (Pickup* pickup : m_Pickups)
-    {
-        delete pickup;
-    }
-    m_Pickups.clear();
-}
 
+    m_Pickups.clear();
+
+    std::cout << "Enemy cleaned up.\n";
+}
 
 void Enemy::Draw() const
 {
@@ -41,12 +42,11 @@ void Enemy::Draw() const
     {
         bullet->Draw();
     }
-
 }
 
 void Enemy::Update(float deltaTime, Point2f playerPos, float radius)
 {
-    if (!IsAlive()) return;  // Do not update if the enemy is dead
+    if (!IsAlive() || m_IsRetreating) return;  // Do not update if the enemy is dead or retreating
 
     circleRadius = radius;
 
@@ -54,11 +54,14 @@ void Enemy::Update(float deltaTime, Point2f playerPos, float radius)
     UpdateTriangle();
     HandlePhases(deltaTime);
 
-    m_ShootTimer += deltaTime;
-    if (m_ShootTimer >= m_ShootInterval)
+    if (IsAlive() && !m_IsRetreating)
     {
-        ShootBullet(playerPos);
-        m_ShootTimer = 0.0f;
+        m_ShootTimer += deltaTime;
+        if (m_ShootTimer >= m_ShootInterval)
+        {
+            ShootBullet(playerPos);
+            m_ShootTimer = 0.0f;
+        }
     }
 
     for (Bullet* bullet : m_Bullets)
@@ -117,7 +120,7 @@ void Enemy::HandlePhases(float deltaTime)
 void Enemy::Phase1(float deltaTime)
 {
     timeElapsed += deltaTime;
-    float duration{ 2.0f }; // duration of the interpolation
+    float duration{ 0.5f }; // duration of the interpolation
     float t = timeElapsed / duration; // duration is the total time for the interpolation
     if (t >= 1.0f)
     {
@@ -134,7 +137,7 @@ void Enemy::Phase1(float deltaTime)
 
 void Enemy::Phase2(float deltaTime)
 {
-    static float timeUntilNextMove = static_cast<float>(std::rand()) / RAND_MAX * 15.0f; // Move every 0-5 seconds
+    static float timeUntilNextMove = static_cast<float>(std::rand()) / RAND_MAX * m_IntervalBetweenMovement; // Move every 0-5 seconds
 
     // If the enemy is moving to a point, continue moving
     if (m_MovingToPoint)
@@ -160,7 +163,7 @@ void Enemy::Phase2(float deltaTime)
         if (timeElapsed >= timeUntilNextMove || IsTooCloseToEdge(50.0f))
         {
             timeElapsed = 0.0f;  // Reset time elapsed for the new movement
-            timeUntilNextMove = static_cast<float>(std::rand()) / RAND_MAX * 15.0f; // Reset the timer for next movement
+            timeUntilNextMove = static_cast<float>(std::rand()) / RAND_MAX * m_IntervalBetweenMovement; // Reset the timer for next movement
 
             // Set a new target position
             targetPosition = generateRandomPositionInsideCircle(circleRadius - 60);
@@ -215,7 +218,7 @@ Point2f Enemy::generateRandomSpawnPoint(float radius)
     float y = centerY + std::sin(angle) * (radius + spawnOffset);
 
     // Calculating the target position inside the circle
-    float targetOffset = 200.0f; // Offset to pull the target point inside the circle
+    float targetOffset = static_cast<float>(std::rand()) / RAND_MAX * (radius - 100);
     float targetx = centerX + std::cos(angle) * (radius - targetOffset);
     float targety = centerY + std::sin(angle) * (radius - targetOffset);
 
@@ -233,6 +236,8 @@ Point2f Enemy::lerp(const Point2f& start, const Point2f& end, float t)
 
 void Enemy::ShootBullet(Point2f playerPos)
 {
+    if (!IsAlive() || m_IsRetreating) return;  // Ensure enemy doesn't shoot if dead or retreating
+
     Bullet* newBullet = new Bullet(m_Position, playerPos, m_VoidCircle);
     m_Bullets.push_back(newBullet);
 }
@@ -265,15 +270,35 @@ void Enemy::DecrementHealth()
     if (!IsAlive() && !m_PickupDrop)
     {
         DropPickups();
+        ClearBullets();  // Add this line to clear bullets when the enemy dies
     }
+}
+
+void Enemy::SetPlayerController(PlayerController* player)
+{
+    m_Player = player;
 }
 
 void Enemy::DropPickups()
 {
-    // Add a health pickup
-    m_Pickups.push_back(new Pickup(Pickup::Type::Health, m_Position));
-	m_PickupDrop = true;
+    if (!m_Player) return;
+
+    float healthDropChance = m_Player->GetHealthPickupProbability(m_Player->GetHealth(), m_Player->m_MaxHealth);
+    float radiusDropChance = m_Player->GetIncreaseRadiusProbability(m_VoidCircle.GetRadius(), m_VoidCircle.GetMaxRadius());
+
+    float dropChance = static_cast<float>(std::rand()) / RAND_MAX;
+
+    if (dropChance < healthDropChance)
+    {
+        m_Pickups.push_back(new Pickup(Pickup::Type::Health, m_Position));
+    }
+    else if (dropChance < healthDropChance + radiusDropChance)
+    {
+        m_Pickups.push_back(new Pickup(Pickup::Type::IncreaseRadius, m_Position));
+    }
+    m_PickupDrop = true;
 }
+
 
 std::vector<Pickup*> Enemy::GetPickups() const
 {
@@ -285,8 +310,20 @@ bool Enemy::IsAlive() const
     return m_Health > 0;
 }
 
-
 Rectf Enemy::GetEnemyRect() const
 {
+    if (!IsAlive())
+    {
+        return Rectf{ 0, 0, 0, 0 }; // Return a zero-sized rect if the enemy is dead
+    }
     return Rectf{ m_Position.x - m_EnemySize, m_Position.y - m_EnemySize, m_EnemySize * 2, m_EnemySize * 2 };
+}
+
+void Enemy::ClearBullets()  // Add this method
+{
+    for (Bullet* bullet : m_Bullets)
+    {
+        delete bullet;
+    }
+    m_Bullets.clear();
 }

@@ -21,8 +21,17 @@ void Pickup::Draw() const
 {
     if (m_Active)
     {
-        utils::SetColor(Color4f{ 0.0f, 0.0f, 1.0f, 1.0f });
-        utils::FillRect(m_Position.x - m_Size / 2, m_Position.y - m_Size * 2 / 2, m_Size, m_Size * 2);
+		if (Pickup::Type::Health == m_Type)
+        {
+			utils::SetColor(Color4f{ 0.0f, 0.0f, 1.0f, 1.0f });
+			utils::FillRect(m_Position.x - m_Size / 2, m_Position.y - m_Size / 2, m_Size, m_Size );
+		}
+        else if (Pickup::Type::IncreaseRadius == m_Type)
+        {
+            utils::SetColor(Color4f{ 1.0f, 0.0f, 1.0f, 1.0f });
+            utils::FillRect(m_Position.x - m_Size / 2, m_Position.y - m_Size / 2, m_Size, m_Size);
+        }
+
     }
 }
 
@@ -31,7 +40,7 @@ bool Pickup::CheckCollision(const Rectf& rect) const
     if (!m_Active)
         return false;
 
-    Rectf pickupRect{ m_Position.x - m_Size / 2, m_Position.y - m_Size * 2 / 2, m_Size, m_Size * 2 };
+    Rectf pickupRect{ m_Position.x - m_Size / 2, m_Position.y - m_Size / 2, m_Size, m_Size  };
     return utils::IsOverlapping(pickupRect, rect);
 }
 
@@ -48,4 +57,9 @@ void Pickup::SetActive(bool active)
 Pickup::Type Pickup::GetType() const
 {
     return m_Type;
+}
+
+Point2f Pickup::GetPosition() const
+{
+    return m_Position;
 }

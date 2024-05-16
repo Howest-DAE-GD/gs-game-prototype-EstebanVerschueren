@@ -1,12 +1,14 @@
+// Enemy.h
 #pragma once
 #include "vector"
 #include "Bullet.h"
 #include "Pickup.h"
+#include "PlayerController.h"
 
 class Enemy
 {
 public:
-    Enemy(float radius, const VoidCircle& voidCircle);
+    Enemy(float radius, const VoidCircle& voidCircle, float movementDuration, float movementInterval);
     ~Enemy();
 
     void Draw() const;
@@ -20,6 +22,14 @@ public:
     Rectf GetEnemyRect() const;
 
     std::vector<Pickup*> GetPickups() const;
+    void ClearBullets(); 
+    void SetPlayerController(PlayerController* player);
+
+	float GetMovementDuration() const { return moveDuration; }
+	float GetIntervalBetweenMovement() const { return m_IntervalBetweenMovement; }
+
+	float SetMovementDuration(float duration) { return moveDuration = duration; }
+	float SetIntervalBetweenMovement(float interval) { return m_IntervalBetweenMovement = interval; }
 
 
 private:
@@ -52,7 +62,7 @@ private:
     void HandlePhases(float deltaTime);
     void Phase1(float deltaTime);
     void Phase2(float deltaTime);
-    void Phase3(float deltaTime);  
+    void Phase3(float deltaTime);
 
     bool m_Phase1{ false };
     bool m_Phase2{ false };
@@ -70,8 +80,12 @@ private:
     float m_RetreatTimer{ 0.0f };  // Timer for phase 3
     Point2f m_RetreatPosition{};   // Target position for retreat
 
-    std::vector<Pickup*> m_Pickups; 
-    void DropPickups(); 
+    std::vector<Pickup*> m_Pickups;
+    void DropPickups();
 
-	bool m_PickupDrop{ false };
+    bool m_PickupDrop{ false };
+    PlayerController* m_Player{ nullptr };
+
+	float m_IntervalBetweenMovement{ 3.0f }; // Interval between movements
+
 };
