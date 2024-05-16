@@ -2,9 +2,10 @@
 #include "Laser.h"
 #include "utils.h"
 #include <cmath>
+#include <iostream>
 
-Laser::Laser(float screenWidth, float screenHeight)
-    : m_ScreenWidth(screenWidth), m_ScreenHeight(screenHeight), m_Timer(0.0f), m_Thickness(2.0f), m_Active(true), m_Color(Color4f{ 1.0f, 0.0f, 1.0f, 1.0f })
+Laser::Laser(float screenWidth, float screenHeight, VoidCircle* voidcirle)
+    : m_ScreenWidth(screenWidth), m_ScreenHeight(screenHeight), m_VoidCircle(voidcirle), m_Timer(0.0f), m_Thickness(2.0f), m_Active(false), m_Color(Color4f{1.0f, 0.0f, 1.0f, 1.0f})
 {
     ResetLaser();
 }
@@ -23,10 +24,12 @@ void Laser::Update(float deltaTime)
     {
         m_Color = Color4f{ 1.0f, 0.0f, 0.0f, 1.0f };
         m_Thickness = 400.0f;
+		m_IsRed = true;
         if (m_Timer >= 1.0f)
         {
             m_Active = false;
             previusValue = m_Active;
+			m_IsRed = false;
         }
     }
 }
@@ -53,7 +56,7 @@ void Laser::ResetLaser()
     m_Color = Color4f{ 1.0f, 0.0f, 1.0f, 1.0f };
 
     // Circle parameters
-    float circleRadius = 720.0f / 2.0f; // Circle radius
+    float circleRadius = m_VoidCircle->GetRadius() - 40; // Circle radius
     float centerX = m_ScreenWidth / 2.0f;
     float centerY = m_ScreenHeight / 2.0f;
 
@@ -79,11 +82,14 @@ bool Laser::IsRed() const
 }
 
 bool Laser::Intersects(const Rectf& playerRect) const {
-    if (!m_Active || !IsRed()) return false;
 
+	std::cout << "Intersects" << std::endl;
+    if (!m_Active || !m_IsRed) return false;
+
+	std::cout << "Intersects truly" << std::endl;
     // Check intersection with both lines of the laser
-    return utils::IsOverlapping(Point2f{ m_StartPoint.x - m_Thickness, m_StartPoint.y - m_Thickness }, Point2f{ m_EndPoint1.x - m_Thickness, m_EndPoint1.y - m_Thickness }, playerRect) ||
-           utils::IsOverlapping(Point2f{ m_StartPoint.x + m_Thickness, m_StartPoint.y + m_Thickness }, Point2f{ m_EndPoint1.x + m_Thickness, m_EndPoint1.y + m_Thickness }, playerRect) ||
-           utils::IsOverlapping(Point2f{ m_StartPoint.x - m_Thickness, m_StartPoint.y - m_Thickness }, Point2f{ m_EndPoint2.x - m_Thickness, m_EndPoint2.y - m_Thickness }, playerRect) ||
-		   utils::IsOverlapping(Point2f{ m_StartPoint.x + m_Thickness, m_StartPoint.y + m_Thickness }, Point2f{ m_EndPoint2.x + m_Thickness, m_EndPoint2.y + m_Thickness }, playerRect);
+	if (utils::IsOverlapping(m_StartPoint, m_EndPoint1, playerRect) || utils::IsOverlapping(m_StartPoint, m_EndPoint2, playerRect))
+    {
+		return true;
+    }
 }

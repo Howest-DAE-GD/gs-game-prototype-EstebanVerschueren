@@ -100,4 +100,7 @@ private:
 
 
 	void SaveHighScore(const std::string& playerName, int score, const std::string& filename);
+
+	float laserCooldown{ 1.0f };
+	float laserTimer{ 0.0f };
 };

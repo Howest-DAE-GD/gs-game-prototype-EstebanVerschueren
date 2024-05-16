@@ -1,10 +1,11 @@
 #pragma once
 #include "utils.h"
+#include "VoidCircle.h"
 
 class Laser
 {
 public:
-    Laser(float screenWidth, float screenHeight);
+    Laser(float screenWidth, float screenHeight, VoidCircle* voidcirle);
     void Update(float deltaTime);
     void Draw() const;
     bool IsActive() const;
@@ -27,4 +28,8 @@ private:
     void ResetLaser();
 
 	bool previusValue = false;
+
+	bool m_IsRed{ false };
+
+	VoidCircle* m_VoidCircle;
 };

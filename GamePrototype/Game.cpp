@@ -34,7 +34,7 @@ void Game::Initialize()
 
 	m_Camera = new Camera(1280.0f, 720.0f);
 
-	m_Laser = new Laser(1280.0f, 720.0f);
+	m_Laser = new Laser(1280.0f, 720.0f, m_voidCircle);
 
     std::cout << "Game initialized.\n";
 }
@@ -172,6 +172,21 @@ void Game::Update(float elapsedSec)
     }
 
 
+    if (m_Laser->Intersects(m_Player->GetPlayerRect()) && laserTimer >= laserCooldown)
+    {
+        m_Player->DecrementHealth();
+        m_Camera->Shake(0.15f, 5.0f);
+		laserTimer = 0.0f;
+		std::cout << "Player hit by laser" << std::endl;
+    }
+
+    
+    laserTimer += elapsedSec;
+	if (laserTimer >= laserCooldown)
+    {
+        laserTimer = laserCooldown;
+	}
+
     Rectf playerRect = m_Player->GetPlayerRect();
     for (Enemy* enemy : m_Enemies)
     {
@@ -180,9 +195,11 @@ void Game::Update(float elapsedSec)
             if (bullet->CheckCollision(playerRect))
             {
                 m_Player->DecrementHealth();
-				m_Camera->Shake(0.2f, 5.0f);
+				m_Camera->Shake(0.15f, 3.0f);
             }
         }
+
+
 
         // Handle player bullet collision with enemies and update score
         Rectf enemyRect = enemy->GetEnemyRect();
