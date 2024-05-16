@@ -7,6 +7,7 @@
 #include "CharacterManager.h"
 #include <vector>
 #include "Laser.h"
+#include "SoundStream.h"
 
 class Game : public BaseGame
 {
@@ -87,4 +88,6 @@ private:
     {
         return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (max - min)));
     }
+
+	SoundStream* m_BackgroundMusic{};
 };

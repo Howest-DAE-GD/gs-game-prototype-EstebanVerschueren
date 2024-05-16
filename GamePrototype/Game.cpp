@@ -28,6 +28,9 @@ void Game::Initialize()
 
     m_NextEnemySpawnTime = 1.0f + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / (m_SpawnInterval - 1.0f)));
 
+	m_BackgroundMusic = new SoundStream("Audio/Bullet_Hell_japanese_hype.wav");
+	m_BackgroundMusic->SetVolume(10.0f);
+	m_BackgroundMusic->Play(true);
 
     std::cout << "Game initialized.\n";
 }
@@ -56,6 +59,8 @@ void Game::Cleanup()
 
     //delete m_Laser;
     //m_Laser = nullptr;
+
+	delete m_BackgroundMusic;
 
     std::cout << "Game cleaned up.\n";
 }
@@ -116,14 +121,12 @@ void Game::Update(float elapsedSec)
     float minSpawnInterval = 1.0f; // Minimum spawn interval
     float maxSpawnInterval = 10.0f; // Initial spawn interval
     m_SpawnInterval = std::max(minSpawnInterval, maxSpawnInterval - timeFactor * 0.7f);
-	std::cout << "Spawn interval: " << m_SpawnInterval << std::endl;
 
     // Adjust movement interval: decrease over time
     float minMovementInterval = 1.5f; // Minimum movement interval
 	m_MinMovementInterval = minMovementInterval;
     float maxMovementInterval = 9.0f; // Initial movement interval
     m_MovementInterval = std::max(minMovementInterval, maxMovementInterval - timeFactor * 1.0f);
-	std::cout << "Movement interval: " << m_MovementInterval << std::endl;
 
     // Adjust shrink speed: increase over time
     float initialShrinkSpeed = 4.0f;
@@ -131,7 +134,7 @@ void Game::Update(float elapsedSec)
     float maxShrinkSpeed = 10.0f;
     float shrinkSpeed = std::min(maxShrinkSpeed, initialShrinkSpeed + timeFactor * (maxShrinkSpeed - minShrinkSpeed) / 10.0f);
     m_voidCircle->SetShrinkSpeed(shrinkSpeed);
-	std::cout << "Shrink speed: " << shrinkSpeed << std::endl;
+
 
     // Spawn enemies at regular intervals
     if (m_GameTimer >= m_NextEnemySpawnTime)
@@ -462,7 +465,6 @@ void Game::SpawnEnemy()
 void Game::UpdateScore(int amount)
 {
     m_Score += amount;
-    std::cout << "Score: " << m_Score << std::endl; // Debugging output
 }
 
 
