@@ -8,6 +8,7 @@
 #include <vector>
 #include "Laser.h"
 #include "SoundStream.h"
+#include "Camera.h"
 
 class Game : public BaseGame
 {
@@ -90,4 +91,5 @@ private:
     }
 
 	SoundStream* m_BackgroundMusic{};
+	Camera* m_Camera{};
 };

@@ -179,7 +179,7 @@ void Enemy::Phase2(float deltaTime)
     {
         m_Phase2 = false;
         m_Phase3 = true;
-        m_RetreatPosition = generateRandomSpawnPoint(circleRadius); // Position outside the circle
+        m_RetreatPosition = generateRandomSpawnPoint(circleRadius + 200); // Position outside the circle
         startPosition = m_Position;
         timeElapsed = 0.0f;
     }
@@ -197,6 +197,7 @@ void Enemy::Phase3(float deltaTime)
         m_Position = m_RetreatPosition;
         m_IsRetreating = true;
         m_Phase3 = false;
+        m_Health = 0;
     }
     else
     {

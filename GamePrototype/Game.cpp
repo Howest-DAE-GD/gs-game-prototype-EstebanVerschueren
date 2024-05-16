@@ -32,6 +32,8 @@ void Game::Initialize()
 	m_BackgroundMusic->SetVolume(10.0f);
 	m_BackgroundMusic->Play(true);
 
+	m_Camera = new Camera(1280.0f, 720.0f);
+
     std::cout << "Game initialized.\n";
 }
 
@@ -61,6 +63,8 @@ void Game::Cleanup()
     //m_Laser = nullptr;
 
 	delete m_BackgroundMusic;
+
+	delete m_Camera;
 
     std::cout << "Game cleaned up.\n";
 }
@@ -107,6 +111,7 @@ void Game::Update(float elapsedSec)
 {
     if (m_GameState == GameState::Ended)
     {
+		m_Camera->Update(elapsedSec);
         return; // Do not update if the game has ended
     }
 
@@ -160,6 +165,7 @@ void Game::Update(float elapsedSec)
             if (bullet->CheckCollision(playerRect))
             {
                 m_Player->DecrementHealth();
+				m_Camera->Shake(0.2f, 5.0f);
             }
         }
 
@@ -237,11 +243,16 @@ void Game::Update(float elapsedSec)
     {
         m_GameState = GameState::Ended;
     }
+
+	m_Camera->Update(elapsedSec);
 }
 
 
 void Game::Draw() const
 {
+    m_Camera->Aim(Point2f{ GetViewPort().width / 2, GetViewPort().height / 2 });
+
+
     ClearBackground();
 
     if (m_GameState == GameState::Ended)
@@ -272,6 +283,7 @@ void Game::Draw() const
 
         DrawScore(); // Draw the score on the screen
     }
+	m_Camera->Reset();
 }
 
 void Game::DrawScore() const
@@ -466,5 +478,7 @@ void Game::UpdateScore(int amount)
 {
     m_Score += amount;
 }
+
+
 
 
