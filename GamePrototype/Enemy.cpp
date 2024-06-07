@@ -35,7 +35,23 @@ void Enemy::Draw() const
 {
     if (!IsAlive()) return;  // Do not draw if the enemy is dead
 
-    utils::SetColor(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
+    Color4f color{ 1.0f, 0.0f, 0.0f, 1.0f };
+
+    if (m_Health == 3)
+    {
+        color = Color4f{ 1.0f, 0.0f, 0.0f, 1.0f };
+    }
+    else if (m_Health == 2)
+    {
+		color = Color4f{ 0.9, 0.0f, 0.0f, 1.0f };
+    }
+	else if (m_Health == 1)
+	{
+		color = Color4f{ 0.75, 0.0f, 0.0f, 1.0f };
+	}
+
+
+    utils::SetColor(color);
     utils::FillPolygon(m_Points->data(), m_Points->size());
 
     for (Bullet* bullet : m_Bullets)
